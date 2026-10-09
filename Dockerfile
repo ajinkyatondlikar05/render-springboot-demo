@@ -1,14 +1,17 @@
-# Use Java 17 runtime
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:17-jdk AS build
 
-# Set working directory
 WORKDIR /app
 
-# Copy the Spring Boot JAR file
-COPY target/renderdemo-0.0.1-SNAPSHOT.jar app.jar
+COPY . .
+RUN chmod +x mvnw
+RUN ./mvnw clean package -DskipTests
 
-# Expose application port
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+
+COPY --from=build /app/target/*.jar app.jar
+
 EXPOSE 8080
 
-# Start the Spring Boot application
-ENTRYPOINT ["java", "-Dserver.port=${PORT:-8080}", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
